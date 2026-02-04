@@ -20,7 +20,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 
-
+// --- UTILITIES ---
 
 const formatDate = (date) => {
   return new Intl.DateTimeFormat('en-US', {
@@ -29,6 +29,7 @@ const formatDate = (date) => {
   }).format(date);
 };
 
+// --- COMPONENTS ---
 
 const StatusBadge = ({ status, confidence }) => {
   let colorClass = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
@@ -140,35 +141,43 @@ export default function App() {
   const [ecgData, setEcgData] = useState([]);
   const [displayData, setDisplayData] = useState([]);
   const [uploadedFileName, setUploadedFileName] = useState(null);
-  const [playbackProgress, setPlaybackProgress] = useState(0); // 0-100
+  const [playbackProgress, setPlaybackProgress] = useState(0); 
   
-  // AI / Simulation State
   const [activeModel, setActiveModel] = useState('mit-bih');
-  const [currentTime, setCurrentTime] = useState(0);
   const [heartRate, setHeartRate] = useState(0);
   const [currentRhythm, setCurrentRhythm] = useState("System Paused");
   const [confidence, setConfidence] = useState(0);
   const [riskScore, setRiskScore] = useState(0);
   const [aiExplanation, setAiExplanation] = useState("System in standby. Please upload ECG data to begin.");
   const [alerts, setAlerts] = useState([]);
-  
-  // Report State
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
-
-  // Analysis State
   const [analysisResult, setAnalysisResult] = useState(null);
 
   const requestRef = useRef();
   const dataIndexRef = useRef(0);
   const timeRef = useRef(0);
 
-  // Constants
   const SAMPLE_RATE = 200; 
   const WINDOW_SIZE_SECONDS = 3;
   const POINTS_PER_WINDOW = SAMPLE_RATE * WINDOW_SIZE_SECONDS;
-  // Speed multiplier: How many samples to process per 60fps frame to match ~200Hz
-  // 200 samples / 60 frames = ~3.33. We round up to 4 for slightly faster-than-realtime responsiveness.
   const SAMPLES_PER_FRAME = 4; 
+
+  // --- SELF-REPAIR: Inject Styles if Missing ---
+  useEffect(() => {
+    // Check if Tailwind classes are working. 'hidden' should hide the element.
+    const testDiv = document.createElement('div');
+    testDiv.className = 'hidden';
+    document.body.appendChild(testDiv);
+    const isHidden = window.getComputedStyle(testDiv).display === 'none';
+    document.body.removeChild(testDiv);
+
+    if (!isHidden) {
+      console.warn("CardioSense AI: Styles missing. Injecting Tailwind CDN fallback.");
+      const script = document.createElement('script');
+      script.src = "https://cdn.tailwindcss.com";
+      document.head.appendChild(script);
+    }
+  }, []);
 
   // --- REAL ANALYSIS ENGINE ---
   
